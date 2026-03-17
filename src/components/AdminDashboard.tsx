@@ -389,7 +389,7 @@ function AppointmentModal({
               {availableSlots.length === 0 ? (
                 <p className="text-zinc-500 text-sm">No available slots for this date.</p>
               ) : (
-                <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
                   {availableSlots.map((slot) => (
                     <button
                       key={slot}

@@ -143,7 +143,7 @@ export default function BookingForm() {
         <p className="text-zinc-400 mb-6">
           Thank you, <span className="text-amber-500 font-semibold">{success.customerName}</span>
         </p>
-        <div className="bg-zinc-800 rounded-lg p-6 mb-6 inline-block text-left">
+        <div className="bg-zinc-800 rounded-lg p-6 mb-6 text-left max-w-sm mx-auto">
           <p className="text-zinc-300 mb-2">
             <span className="text-zinc-500">Date:</span> {formattedDate}
           </p>
@@ -282,7 +282,7 @@ export default function BookingForm() {
           ) : availableSlots.length === 0 ? (
             <p className="text-zinc-400">No available slots for this date. Please try another day.</p>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
               {availableSlots.map((slot) => (
                 <button
                   key={slot}
