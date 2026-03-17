@@ -22,15 +22,6 @@ export default async function AdminPage() {
           </h1>
           <p className="text-zinc-400 print:text-gray-600">Manage appointments</p>
         </div>
-        <div className="flex gap-3 print:hidden">
-          <button
-            onClick={() => {}}
-            className="hidden"
-            id="print-trigger"
-          >
-            Print
-          </button>
-        </div>
       </div>
       <AdminDashboard />
     </div>
