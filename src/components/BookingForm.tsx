@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface BookingSuccess {
   customerName: string;
@@ -10,6 +11,7 @@ interface BookingSuccess {
 }
 
 export default function BookingForm() {
+  const { t, formatDate } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -73,7 +75,7 @@ export default function BookingForm() {
 
       if (!res.ok) {
         if (res.status === 409) {
-          setError("This time slot has just been booked by someone else. Please select another slot.");
+          setError(t("booking.slotTaken"));
           fetchSlots(selectedDate);
         } else {
           setError(data.error || "Failed to book appointment");
@@ -88,7 +90,7 @@ export default function BookingForm() {
         googleCalendarUrl: data.googleCalendarUrl,
       });
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("booking.genericError"));
     } finally {
       setLoading(false);
     }
@@ -123,13 +125,18 @@ export default function BookingForm() {
     return `${currentMonth.year}-${m}-${d}`;
   };
 
-  const monthName = new Date(currentMonth.year, currentMonth.month).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+  const monthName = formatDate(
+    new Date(currentMonth.year, currentMonth.month),
+    { month: "long", year: "numeric" }
+  );
+
+  const dayKeys = [
+    "calendar.mon", "calendar.tue", "calendar.wed", "calendar.thu",
+    "calendar.fri", "calendar.sat", "calendar.sun",
+  ];
 
   if (success) {
-    const formattedDate = new Date(success.date + "T00:00:00").toLocaleDateString("en-GB", {
+    const formattedDate = formatDate(success.date + "T00:00:00", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -139,19 +146,19 @@ export default function BookingForm() {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
         <div className="text-5xl mb-4">✅</div>
-        <h2 className="text-2xl font-bold text-white mb-2">Appointment Booked!</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">{t("booking.success.title")}</h2>
         <p className="text-zinc-400 mb-6">
-          Thank you, <span className="text-amber-500 font-semibold">{success.customerName}</span>
+          {t("booking.success.thankYou", { name: success.customerName })}
         </p>
         <div className="bg-zinc-800 rounded-lg p-6 mb-6 text-left max-w-sm mx-auto">
           <p className="text-zinc-300 mb-2">
-            <span className="text-zinc-500">Date:</span> {formattedDate}
+            <span className="text-zinc-500">{t("booking.success.date")}</span> {formattedDate}
           </p>
           <p className="text-zinc-300 mb-2">
-            <span className="text-zinc-500">Time:</span> {success.timeSlot}
+            <span className="text-zinc-500">{t("booking.success.time")}</span> {success.timeSlot}
           </p>
           <p className="text-zinc-300">
-            <span className="text-zinc-500">Duration:</span> 30 minutes
+            <span className="text-zinc-500">{t("booking.success.duration")}</span> {t("booking.success.durationValue")}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -161,7 +168,7 @@ export default function BookingForm() {
             rel="noopener noreferrer"
             className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
-            Add to Google Calendar
+            {t("booking.success.addToCalendar")}
           </a>
           <button
             onClick={() => {
@@ -174,7 +181,7 @@ export default function BookingForm() {
             }}
             className="border border-zinc-600 hover:border-zinc-400 text-zinc-300 hover:text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
-            Book Another
+            {t("booking.success.bookAnother")}
           </button>
         </div>
       </div>
@@ -229,9 +236,9 @@ export default function BookingForm() {
         </div>
 
         <div className="grid grid-cols-7 gap-1 text-center">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-            <div key={d} className="text-zinc-500 text-xs font-medium py-2">
-              {d}
+          {dayKeys.map((key) => (
+            <div key={key} className="text-zinc-500 text-xs font-medium py-2">
+              {t(key)}
             </div>
           ))}
 
@@ -270,17 +277,18 @@ export default function BookingForm() {
       {selectedDate && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-4">
-            Available Times for{" "}
-            {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-GB", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
+            {t("booking.availableTimes", {
+              date: formatDate(selectedDate + "T00:00:00", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              }),
             })}
           </h3>
           {slotsLoading ? (
-            <p className="text-zinc-400">Loading available slots...</p>
+            <p className="text-zinc-400">{t("booking.loadingSlots")}</p>
           ) : availableSlots.length === 0 ? (
-            <p className="text-zinc-400">No available slots for this date. Please try another day.</p>
+            <p className="text-zinc-400">{t("booking.noSlots")}</p>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
               {availableSlots.map((slot) => (
@@ -305,11 +313,11 @@ export default function BookingForm() {
       {/* Customer Form */}
       {selectedSlot && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Your Details</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">{t("booking.yourDetails")}</h3>
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm text-zinc-400 mb-1">
-                Full Name
+                {t("booking.fullName")}
               </label>
               <input
                 id="name"
@@ -318,12 +326,12 @@ export default function BookingForm() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors"
-                placeholder="John Doe"
+                placeholder={t("booking.namePlaceholder")}
               />
             </div>
             <div>
               <label htmlFor="email" className="block text-sm text-zinc-400 mb-1">
-                Email
+                {t("booking.emailLabel")}
               </label>
               <input
                 id="email"
@@ -332,12 +340,12 @@ export default function BookingForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors"
-                placeholder="john@example.com"
+                placeholder={t("booking.emailPlaceholder")}
               />
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm text-zinc-400 mb-1">
-                Phone Number
+                {t("booking.phoneLabel")}
               </label>
               <input
                 id="phone"
@@ -346,7 +354,7 @@ export default function BookingForm() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors"
-                placeholder="+351 912 345 678"
+                placeholder={t("booking.phonePlaceholder")}
               />
             </div>
           </div>
@@ -365,7 +373,7 @@ export default function BookingForm() {
           disabled={loading || !name || !email || !phone}
           className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold text-lg transition-colors"
         >
-          {loading ? "Booking..." : "Confirm Booking"}
+          {loading ? t("booking.booking") : t("booking.confirmBooking")}
         </button>
       )}
     </form>

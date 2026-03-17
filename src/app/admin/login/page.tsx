@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +25,7 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("Invalid credentials");
+      setError(t("admin.login.invalidCredentials"));
       setLoading(false);
     } else {
       router.push("/admin");
@@ -33,13 +35,13 @@ export default function LoginPage() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-white mb-2 text-center">Admin Login</h1>
-        <p className="text-zinc-400 text-center mb-8">Barbershop Dragan</p>
+        <h1 className="text-2xl font-bold text-white mb-2 text-center">{t("admin.login.title")}</h1>
+        <p className="text-zinc-400 text-center mb-8">{t("admin.login.subtitle")}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm text-zinc-400 mb-1">
-              Username
+              {t("admin.login.username")}
             </label>
             <input
               id="username"
@@ -52,7 +54,7 @@ export default function LoginPage() {
           </div>
           <div>
             <label htmlFor="password" className="block text-sm text-zinc-400 mb-1">
-              Password
+              {t("admin.login.password")}
             </label>
             <input
               id="password"
@@ -75,7 +77,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 text-white py-2 rounded-lg font-semibold transition-colors"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? t("admin.login.signingIn") : t("admin.login.signIn")}
           </button>
         </form>
       </div>

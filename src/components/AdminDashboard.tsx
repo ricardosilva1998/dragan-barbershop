@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface Appointment {
   id: string;
@@ -38,24 +39,15 @@ function getWeekDates(dateStr: string): string[] {
   return dates;
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function formatShortDate(dateStr: string): string {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
-
 export default function AdminDashboard() {
+  const { t, formatDate: fmtDate } = useTranslation();
+
+  const formatDateLong = (dateStr: string) =>
+    fmtDate(dateStr + "T00:00:00", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
+  const formatDateShort = (dateStr: string) =>
+    fmtDate(dateStr + "T00:00:00", { weekday: "short", day: "numeric", month: "short" });
+
   const [selectedDate, setSelectedDate] = useState(() => {
     return new Date().toISOString().split("T")[0];
   });
@@ -165,7 +157,7 @@ export default function AdminDashboard() {
                   : "text-zinc-400 hover:text-white"
               }`}
             >
-              Daily
+              {t("admin.dashboard.daily")}
             </button>
             <button
               onClick={() => setViewMode("weekly")}
@@ -175,7 +167,7 @@ export default function AdminDashboard() {
                   : "text-zinc-400 hover:text-white"
               }`}
             >
-              Weekly
+              {t("admin.dashboard.weekly")}
             </button>
           </div>
 
@@ -199,7 +191,7 @@ export default function AdminDashboard() {
               onClick={() => setSelectedDate(new Date().toISOString().split("T")[0])}
               className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 h-9 rounded-lg text-sm border border-zinc-700"
             >
-              Today
+              {t("admin.dashboard.today")}
             </button>
             <button
               onClick={() =>
@@ -217,13 +209,13 @@ export default function AdminDashboard() {
             onClick={() => window.print()}
             className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-sm transition-colors border border-zinc-700"
           >
-            Print Schedule
+            {t("admin.dashboard.printSchedule")}
           </button>
           <button
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
             className="bg-red-900/50 hover:bg-red-900 text-red-300 px-4 py-2 rounded-lg text-sm transition-colors border border-red-800"
           >
-            Sign Out
+            {t("admin.dashboard.signOut")}
           </button>
         </div>
       </div>
@@ -232,19 +224,19 @@ export default function AdminDashboard() {
       <div className="hidden print:block text-center mb-4">
         <h2 className="text-xl font-bold">
           {viewMode === "daily"
-            ? formatDate(selectedDate)
-            : `Week: ${formatShortDate(weekDates[0])} – ${formatShortDate(weekDates[6])}`}
+            ? formatDateLong(selectedDate)
+            : `${t("admin.dashboard.week")}: ${formatDateShort(weekDates[0])} – ${formatDateShort(weekDates[6])}`}
         </h2>
         <p>
           {viewMode === "daily"
-            ? `${dailyAppointments.length} appointment(s)`
-            : `${weeklyTotal} appointment(s)`}
+            ? `${dailyAppointments.length} ${dailyAppointments.length !== 1 ? t("admin.dashboard.appointments") : t("admin.dashboard.appointment")}`
+            : `${weeklyTotal} ${weeklyTotal !== 1 ? t("admin.dashboard.appointments") : t("admin.dashboard.appointment")}`}
         </p>
       </div>
 
       {loading ? (
         <div className="p-8 text-center text-zinc-400">
-          Loading appointments...
+          {t("admin.dashboard.loading")}
         </div>
       ) : viewMode === "daily" ? (
         <DailyView
@@ -252,6 +244,8 @@ export default function AdminDashboard() {
           appointments={dailyAppointments}
           onManage={setModalAppointment}
           actionLoading={actionLoading}
+          formatDateLong={formatDateLong}
+          t={t}
         />
       ) : (
         <WeeklyView
@@ -261,6 +255,9 @@ export default function AdminDashboard() {
           onManage={setModalAppointment}
           actionLoading={actionLoading}
           weeklyTotal={weeklyTotal}
+          formatDateLong={formatDateLong}
+          formatDateShort={formatDateShort}
+          t={t}
         />
       )}
 
@@ -273,6 +270,8 @@ export default function AdminDashboard() {
           onCancel={handleCancel}
           onReschedule={handleReschedule}
           actionLoading={actionLoading}
+          formatDateLong={formatDateLong}
+          t={t}
         />
       )}
     </div>
@@ -288,6 +287,8 @@ function AppointmentModal({
   onCancel,
   onReschedule,
   actionLoading,
+  formatDateLong,
+  t,
 }: {
   appointment: Appointment;
   bookedSlots: (date: string) => Set<string>;
@@ -295,6 +296,8 @@ function AppointmentModal({
   onCancel: (id: string) => void;
   onReschedule: (id: string, newDate: string, newTimeSlot: string) => void;
   actionLoading: string | null;
+  formatDateLong: (dateStr: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }) {
   const [mode, setMode] = useState<"choose" | "reschedule">("choose");
   const [newDate, setNewDate] = useState(appointment.date);
@@ -323,9 +326,9 @@ function AppointmentModal({
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white">Manage Appointment</h3>
+            <h3 className="text-lg font-bold text-white">{t("admin.modal.title")}</h3>
             <p className="text-zinc-400 text-sm mt-1">
-              {appointment.customerName} &middot; {formatDate(appointment.date)} at {appointment.timeSlot}
+              {appointment.customerName} &middot; {formatDateLong(appointment.date)} at {appointment.timeSlot}
             </p>
           </div>
           <button
@@ -341,23 +344,23 @@ function AppointmentModal({
         {mode === "choose" ? (
           <div className="space-y-3">
             <p className="text-zinc-300 text-sm">
-              What would you like to do with this appointment?
+              {t("admin.modal.question")}
             </p>
             <button
               onClick={() => setMode("reschedule")}
               className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-lg font-semibold transition-colors"
             >
-              Reschedule to Another Day
+              {t("admin.modal.reschedule")}
             </button>
             <button
               onClick={() => onCancel(appointment.id)}
               disabled={isLoading}
               className="w-full bg-red-900/50 hover:bg-red-900 text-red-300 py-3 rounded-lg font-semibold transition-colors border border-red-800 disabled:opacity-50"
             >
-              {isLoading ? "Cancelling..." : "Cancel Appointment"}
+              {isLoading ? t("admin.modal.cancelling") : t("admin.modal.cancel")}
             </button>
             <p className="text-zinc-500 text-xs text-center">
-              The customer will be notified by email.
+              {t("admin.modal.emailNotice")}
             </p>
           </div>
         ) : (
@@ -366,12 +369,12 @@ function AppointmentModal({
               onClick={() => { setMode("choose"); setNewTimeSlot(""); }}
               className="text-zinc-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
             >
-              &larr; Back
+              &larr; {t("admin.modal.back")}
             </button>
 
             {/* Date picker */}
             <div>
-              <label className="text-zinc-400 text-sm block mb-1">New Date</label>
+              <label className="text-zinc-400 text-sm block mb-1">{t("admin.modal.newDate")}</label>
               <input
                 type="date"
                 value={newDate}
@@ -384,10 +387,10 @@ function AppointmentModal({
             {/* Time slots */}
             <div>
               <label className="text-zinc-400 text-sm block mb-2">
-                Available Time Slots
+                {t("admin.modal.availableSlots")}
               </label>
               {availableSlots.length === 0 ? (
-                <p className="text-zinc-500 text-sm">No available slots for this date.</p>
+                <p className="text-zinc-500 text-sm">{t("admin.modal.noSlots")}</p>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
                   {availableSlots.map((slot) => (
@@ -413,10 +416,12 @@ function AppointmentModal({
               disabled={!newTimeSlot || isLoading}
               className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Rescheduling..." : `Reschedule to ${newDate} at ${newTimeSlot || "..."}`}
+              {isLoading
+                ? t("admin.modal.rescheduling")
+                : t("admin.modal.rescheduleTo", { date: newDate, time: newTimeSlot || "..." })}
             </button>
             <p className="text-zinc-500 text-xs text-center">
-              The customer will be notified by email with the new date.
+              {t("admin.modal.rescheduleEmailNotice")}
             </p>
           </div>
         )}
@@ -432,27 +437,31 @@ function DailyView({
   appointments,
   onManage,
   actionLoading,
+  formatDateLong,
+  t,
 }: {
   date: string;
   appointments: Appointment[];
   onManage: (apt: Appointment) => void;
   actionLoading: string | null;
+  formatDateLong: (dateStr: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }) {
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 print:hidden">
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-zinc-400 text-sm">Date</p>
-          <p className="text-white font-semibold">{formatDate(date)}</p>
+          <p className="text-zinc-400 text-sm">{t("admin.dashboard.date")}</p>
+          <p className="text-white font-semibold">{formatDateLong(date)}</p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-zinc-400 text-sm">Booked</p>
+          <p className="text-zinc-400 text-sm">{t("admin.dashboard.booked")}</p>
           <p className="text-amber-500 font-semibold text-2xl">
             {appointments.length}
           </p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-zinc-400 text-sm">Total Slots</p>
+          <p className="text-zinc-400 text-sm">{t("admin.dashboard.totalSlots")}</p>
           <p className="text-white font-semibold text-2xl">20</p>
         </div>
       </div>
@@ -462,6 +471,7 @@ function DailyView({
         onManage={onManage}
         actionLoading={actionLoading}
         showDate={false}
+        t={t}
       />
     </>
   );
@@ -474,6 +484,9 @@ function WeeklyView({
   onManage,
   actionLoading,
   weeklyTotal,
+  formatDateLong,
+  formatDateShort,
+  t,
 }: {
   weekDates: string[];
   selectedDate: string;
@@ -481,22 +494,25 @@ function WeeklyView({
   onManage: (apt: Appointment) => void;
   actionLoading: string | null;
   weeklyTotal: number;
+  formatDateLong: (dateStr: string) => string;
+  formatDateShort: (dateStr: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }) {
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 print:hidden">
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-zinc-400 text-sm">Week</p>
+          <p className="text-zinc-400 text-sm">{t("admin.dashboard.week")}</p>
           <p className="text-white font-semibold text-sm">
-            {formatShortDate(weekDates[0])} – {formatShortDate(weekDates[6])}
+            {formatDateShort(weekDates[0])} – {formatDateShort(weekDates[6])}
           </p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-zinc-400 text-sm">Total Booked</p>
+          <p className="text-zinc-400 text-sm">{t("admin.dashboard.totalBooked")}</p>
           <p className="text-amber-500 font-semibold text-2xl">{weeklyTotal}</p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-zinc-400 text-sm">Total Slots</p>
+          <p className="text-zinc-400 text-sm">{t("admin.dashboard.totalSlots")}</p>
           <p className="text-white font-semibold text-2xl">{20 * 7}</p>
         </div>
       </div>
@@ -525,16 +541,16 @@ function WeeklyView({
               >
                 <div className="flex items-center gap-3">
                   <h3 className="font-semibold text-white print:text-black">
-                    {formatDate(date)}
+                    {formatDateLong(date)}
                   </h3>
                   {isToday && (
                     <span className="bg-amber-600 text-white text-xs px-2 py-0.5 rounded-full font-medium print:hidden">
-                      Today
+                      {t("admin.dashboard.today")}
                     </span>
                   )}
                 </div>
                 <span className="text-zinc-400 print:text-black text-sm">
-                  {dayAppts.length} appointment{dayAppts.length !== 1 ? "s" : ""}
+                  {dayAppts.length} {dayAppts.length !== 1 ? t("admin.dashboard.appointments") : t("admin.dashboard.appointment")}
                 </span>
               </div>
 
@@ -544,10 +560,11 @@ function WeeklyView({
                   onManage={onManage}
                   actionLoading={actionLoading}
                   showDate={false}
+                  t={t}
                 />
               ) : (
                 <div className="px-4 py-3 text-zinc-500 print:text-gray-400 text-sm">
-                  No appointments
+                  {t("admin.dashboard.noAppointments")}
                 </div>
               )}
             </div>
@@ -565,16 +582,18 @@ function AppointmentTable({
   onManage,
   actionLoading,
   showDate,
+  t,
 }: {
   appointments: Appointment[];
   onManage: (apt: Appointment) => void;
   actionLoading: string | null;
   showDate: boolean;
+  t: (key: string, params?: Record<string, string>) => string;
 }) {
   if (appointments.length === 0) {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center text-zinc-400 print:border-gray-300 print:bg-white print:text-gray-500">
-        No appointments.
+        {t("admin.dashboard.noAppointments")}
       </div>
     );
   }
@@ -586,26 +605,26 @@ function AppointmentTable({
           <tr className="border-b border-zinc-800 print:border-gray-300">
             {showDate && (
               <th className="text-left px-4 py-3 text-zinc-400 print:text-black text-sm font-medium">
-                Date
+                {t("admin.dashboard.date")}
               </th>
             )}
             <th className="text-left px-4 py-3 text-zinc-400 print:text-black text-sm font-medium">
-              Time
+              {t("admin.table.time")}
             </th>
             <th className="text-left px-4 py-3 text-zinc-400 print:text-black text-sm font-medium">
-              Name
+              {t("admin.table.name")}
             </th>
             <th className="text-left px-4 py-3 text-zinc-400 print:text-black text-sm font-medium hidden sm:table-cell">
-              Phone
+              {t("admin.table.phone")}
             </th>
             <th className="text-left px-4 py-3 text-zinc-400 print:text-black text-sm font-medium hidden md:table-cell">
-              Email
+              {t("admin.table.email")}
             </th>
             <th className="text-left px-4 py-3 text-zinc-400 print:text-black text-sm font-medium">
-              Status
+              {t("admin.table.status")}
             </th>
             <th className="text-left px-4 py-3 text-zinc-400 text-sm font-medium print:hidden">
-              Actions
+              {t("admin.table.actions")}
             </th>
           </tr>
         </thead>
@@ -617,7 +636,7 @@ function AppointmentTable({
             >
               {showDate && (
                 <td className="px-4 py-3 text-zinc-300 print:text-black text-sm">
-                  {formatShortDate(apt.date)}
+                  {apt.date}
                 </td>
               )}
               <td className="px-4 py-3 text-white print:text-black font-medium">
@@ -650,7 +669,7 @@ function AppointmentTable({
                     disabled={actionLoading === apt.id}
                     className="text-amber-400 hover:text-amber-300 text-sm font-medium disabled:opacity-50 transition-colors"
                   >
-                    Manage
+                    {t("admin.table.manage")}
                   </button>
                 )}
               </td>

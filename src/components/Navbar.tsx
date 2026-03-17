@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslation } from "@/i18n/useTranslation";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <nav className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-50">
@@ -17,19 +20,20 @@ export default function Navbar() {
           {/* Desktop menu */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-zinc-300 hover:text-white transition-colors">
-              Home
+              {t("nav.home")}
             </Link>
             <Link href="/about" className="text-zinc-300 hover:text-white transition-colors">
-              About
+              {t("nav.about")}
             </Link>
             <Link href="/contact" className="text-zinc-300 hover:text-white transition-colors">
-              Contact
+              {t("nav.contact")}
             </Link>
+            <LanguageSwitcher />
             <Link
               href="/booking"
               className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
             >
-              Book Now
+              {t("nav.bookNow")}
             </Link>
           </div>
 
@@ -53,20 +57,23 @@ export default function Navbar() {
         {isOpen && (
           <div className="md:hidden pb-4 space-y-2">
             <Link href="/" onClick={() => setIsOpen(false)} className="block text-zinc-300 hover:text-white py-2">
-              Home
+              {t("nav.home")}
             </Link>
             <Link href="/about" onClick={() => setIsOpen(false)} className="block text-zinc-300 hover:text-white py-2">
-              About
+              {t("nav.about")}
             </Link>
             <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-zinc-300 hover:text-white py-2">
-              Contact
+              {t("nav.contact")}
             </Link>
+            <div className="py-2">
+              <LanguageSwitcher />
+            </div>
             <Link
               href="/booking"
               onClick={() => setIsOpen(false)}
               className="block bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-lg font-semibold text-center transition-colors"
             >
-              Book Now
+              {t("nav.bookNow")}
             </Link>
           </div>
         )}
