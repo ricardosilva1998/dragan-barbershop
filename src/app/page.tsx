@@ -69,19 +69,35 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Gallery Section */}
+      {/* Gallery Section — Instagram Embeds */}
       <section className="py-20 bg-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">
             Our <span className="text-amber-500">Work</span>
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-square bg-zinc-800 rounded-lg flex items-center justify-center border border-zinc-700"
-              >
-                <span className="text-zinc-500 text-sm">Gallery Photo {i + 1}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              "https://www.instagram.com/p/DG17J1cNaA5/",
+              "https://www.instagram.com/p/DGzHaWENMXA/",
+              "https://www.instagram.com/p/DGMxIcUtFQr/",
+              "https://www.instagram.com/p/DFdcVFptqKP/",
+              "https://www.instagram.com/p/DEyh_nMtiLi/",
+              "https://www.instagram.com/p/DEeK0w9Nlxr/",
+            ].map((url) => (
+              <div key={url} className="flex justify-center">
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-captioned
+                  data-instgrm-permalink={url}
+                  style={{
+                    maxWidth: "540px",
+                    width: "100%",
+                    background: "#1c1917",
+                    border: "1px solid #3f3f46",
+                    borderRadius: "12px",
+                    margin: 0,
+                  }}
+                />
               </div>
             ))}
           </div>

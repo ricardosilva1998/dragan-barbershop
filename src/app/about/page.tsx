@@ -6,9 +6,21 @@ export default function AboutPage() {
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        {/* Photo placeholder */}
-        <div className="aspect-[3/4] bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
-          <span className="text-zinc-500">Photo of Dragan</span>
+        {/* Instagram photo embed */}
+        <div className="flex justify-center">
+          <blockquote
+            className="instagram-media"
+            data-instgrm-captioned
+            data-instgrm-permalink="https://www.instagram.com/p/DG17J1cNaA5/"
+            style={{
+              maxWidth: "540px",
+              width: "100%",
+              background: "#1c1917",
+              border: "1px solid #3f3f46",
+              borderRadius: "12px",
+              margin: 0,
+            }}
+          />
         </div>
 
         {/* Bio */}

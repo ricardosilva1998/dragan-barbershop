@@ -32,6 +32,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <script async src="https://www.instagram.com/embed.js"></script>
       </body>
     </html>
   );
