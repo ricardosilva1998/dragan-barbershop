@@ -4,8 +4,18 @@ import { auth } from "../../../../auth";
 import { sendConfirmationEmail } from "@/lib/email";
 import { getGoogleCalendarUrl } from "@/lib/calendar";
 import { ALL_SLOTS } from "@/lib/slots";
+import { rateLimit } from "@/lib/rateLimit";
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const { allowed, retryAfterMs } = rateLimit(ip, 5, 60_000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const { customerName, customerEmail, customerPhone, date, timeSlot } = body;
