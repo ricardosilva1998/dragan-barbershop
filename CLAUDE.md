@@ -88,3 +88,20 @@ Required in `.env` / `.env.local`:
 - `AUTH_SECRET` — NextAuth secret
 - `RESEND_API_KEY` — Resend email API key
 - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — Admin credentials (fallback: hardcoded in auth.ts)
+
+
+## Team Activity Log
+
+This section is the shared coordination surface for the dev team (team-leader + frontend-dev + backend-dev + team-security + team-qa + team-ux + team-deployment). Every team member reads the last few entries before working and appends one entry after.
+
+Format per entry:
+
+```
+### YYYY-MM-DD HH:MM — <role>
+**Task:** <one line>
+**Files:** <comma-separated paths or "none">
+**Decisions:** <2-4 bullets the next teammate needs to know>
+**Open:** <followups, or "none">
+```
+
+(No entries yet — the next `/dev-team` round will append here.)
